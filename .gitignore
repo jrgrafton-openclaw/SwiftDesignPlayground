@@ -1,0 +1,26 @@
+# Build artifacts
+build/
+*.ipa
+*.app.dSYM.zip
+*.xcarchive
+
+# Signing — certs and profiles are fetched by fastlane, never committed
+*.cer
+*.mobileprovision
+*.p12
+
+# Fastlane artifacts
+fastlane/report.xml
+fastlane/README.md
+fastlane/*.mobileprovision
+
+# Xcode
+xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+
+# macOS
+.DS_Store
