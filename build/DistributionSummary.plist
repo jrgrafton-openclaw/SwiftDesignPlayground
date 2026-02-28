@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SwiftDesignPlayground.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>2</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>804B6355BEE56AFBF89F010FA4724DBD6F98A2D2</string>
+				<key>dateExpires</key>
+				<string>2/18/27</string>
+				<key>type</key>
+				<string>Apple Distribution</string>
+			</dict>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>B5X96QDRF4.com.jrgrafton.swift.design.playground</string>
+				<key>beta-reports-active</key>
+				<true/>
+				<key>com.apple.developer.team-identifier</key>
+				<string>B5X96QDRF4</string>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>SwiftDesignPlayground.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>f8b5b55d-f81a-4280-8965-eb8b9a49d9e2</string>
+				<key>dateExpires</key>
+				<string>2/18/27</string>
+				<key>name</key>
+				<string>com.jrgrafton.swift.design.playground AppStore</string>
+			</dict>
+			<key>symbols</key>
+			<true/>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>B5X96QDRF4</string>
+				<key>name</key>
+				<string></string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>

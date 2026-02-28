@@ -134,6 +134,7 @@ platform :ios do
 
     UI.message("Uploading IPA to App Store Connect...")
     sh %Q{
+      set -o pipefail
       mkdir -p ~/.appstoreconnect/private_keys
       ln -sf "#{key_path}" ~/.appstoreconnect/private_keys/AuthKey_#{key_id}.p8
       xcrun altool --upload-app \
@@ -147,9 +148,64 @@ platform :ios do
 
     # Use ASC API to distribute (Lesson #16 & #17)
     UI.message("Distributing build #{next_build} to Internal Testers via ASC API...")
-    # TODO: Need the Internal Testers beta group ID for SwiftDesignPlayground
-    # For now, skip ASC distribution — it will need the group ID once created
-    UI.important("⚠️  Auto-distribution not configured yet — add beta group ID for SwiftDesignPlayground")
+    sh %Q{
+      python3 - << 'PYEOF'
+import jwt, time, urllib.request, json, sys, os
+
+def make_token():
+    key = open(os.path.expanduser("~/.openclaw/secrets/app-store-connect/AuthKey_7UKLD4C2CC.p8")).read()
+    payload = {"iss": "69a6de70-79a7-47e3-e053-5b8c7c11a4d1", "iat": int(time.time()), "exp": int(time.time()) + 1200, "aud": "appstoreconnect-v1"}
+    return jwt.encode(payload, key, algorithm="ES256", headers={"kid": "7UKLD4C2CC"})
+
+def headers():
+    return {"Authorization": f"Bearer {make_token()}", "Content-Type": "application/json"}
+
+APP_ID = "6759811915"
+GROUP_ID = "3e9bf740-1bea-4a46-b0e7-e0b569e55f6b"
+BUILD_VERSION = "#{next_build}"
+
+build_id = None
+for attempt in range(90):
+    url = f"https://api.appstoreconnect.apple.com/v1/apps/{APP_ID}/builds?limit=20&fields[builds]=version,processingState"
+    req = urllib.request.Request(url, headers=headers())
+    builds = json.loads(urllib.request.urlopen(req).read())["data"]
+    match = next((b for b in builds if b["attributes"]["version"] == BUILD_VERSION), None)
+    if match:
+        state = match["attributes"]["processingState"]
+        print(f"[{attempt+1}/90] Build {BUILD_VERSION}: {state}")
+        if state == "VALID":
+            build_id = match["id"]
+            break
+        elif state == "INVALID":
+            print(f"ERROR: Build {BUILD_VERSION} is INVALID", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print(f"[{attempt+1}/90] Build {BUILD_VERSION} not yet visible in ASC...")
+    time.sleep(10)
+
+if not build_id:
+    print(f"ERROR: Build {BUILD_VERSION} never reached VALID after 15 minutes", file=sys.stderr)
+    sys.exit(1)
+
+print(f"✅ Build {BUILD_VERSION} is VALID: {build_id}")
+
+payload_data = json.dumps({"data": [{"type": "builds", "id": build_id}]}).encode()
+req = urllib.request.Request(
+    f"https://api.appstoreconnect.apple.com/v1/betaGroups/{GROUP_ID}/relationships/builds",
+    data=payload_data, headers=headers(), method="POST"
+)
+try:
+    urllib.request.urlopen(req)
+    print(f"✅ Build {BUILD_VERSION} added to Internal Testers")
+except urllib.error.HTTPError as e:
+    body = e.read().decode()
+    if e.code == 409:
+        print(f"ℹ️  Build {BUILD_VERSION} already in group")
+    else:
+        print(f"ERROR {e.code}: {body}", file=sys.stderr)
+        sys.exit(1)
+PYEOF
+    }
 
     build_number = next_build.to_s
     version_number = sh("/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' '#{info_plist_path}'", log: false).strip

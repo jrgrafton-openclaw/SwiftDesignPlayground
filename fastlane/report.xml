@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.000168">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="01: Switch to ios api_key lane" time="0.000188">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="02: app_store_connect_api_key" time="0.001461">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="03: security unlock-keychain -p &apos;&apos; ~/Library/Keychains/build.keychain-db" time="0.009759">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="04: security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k &apos;&apos; ~/Library/Keychains/build.keychain-db 2&gt;/dev/null || true" time="0.025375">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="05: security list-keychains -d user -s ~/Library/Keychains/build.keychain-db ~/Library/Keychains/login.keychain-db /Library/Keychains/System.keychain" time="0.007734">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="06: Switch to ios create_json_key lane" time="0.000132">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="07: sigh" time="1.206101">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="08: cp &apos;/Users/familybot/.openclaw/workspace/projects/SwiftDesignPlayground/fastlane/AppStore_com.jrgrafton.swift.design.playground.mobileprovision&apos; ~/Library/MobileDevice/Provisioning\ Profiles/f8b5b55d-f81a-4280-8965-eb8b9a49d9e2.mobileprovision" time="0.004644">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="09: update_code_signing_settings" time="0.016717">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="10: shell command" time="0.005492">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="11: /usr/libexec/PlistBuddy -c &apos;Set CFBundleVersion 2&apos; &apos;/Users/familybot/.openclaw/workspace/projects/SwiftDesignPlayground/Info.plist&apos;" time="0.004732">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="12: 
+      cd &apos;/Users/familybot/.openclaw/workspace/projects/SwiftDesignPlayground&apos;
+      xcodebuild         -scheme SwiftDesignPlayground         -project SwiftDesignPlayground.xcodeproj         -destination &apos;generic/platform=iOS&apos;         -archivePath &apos;/Users/familybot/Library/Developer/Xcode/Archives/2026-02-28/SwiftDesignPlayground.xcarchive&apos;         -parallelizeTargets         COMPILER_INDEX_STORE_ENABLE=NO         ENABLE_BITCODE=NO         archive &gt; /tmp/xcodebuild-archive.log 2&gt;&amp;1 || (tail -50 /tmp/xcodebuild-archive.log &gt;&amp;2; exit 1)
+    " time="2.679379">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="13: 
+      xcodebuild         -exportArchive         -archivePath &apos;/Users/familybot/Library/Developer/Xcode/Archives/2026-02-28/SwiftDesignPlayground.xcarchive&apos;         -exportPath &apos;/Users/familybot/.openclaw/workspace/projects/SwiftDesignPlayground/build&apos;         -exportOptionsPlist &apos;/tmp/SwiftDesignPlayground_export_options.plist&apos;
+    " time="0.919661">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="14: 
+      set -o pipefail
+      mkdir -p ~/.appstoreconnect/private_keys
+      ln -sf &quot;/Users/familybot/.openclaw/secrets/app-store-connect/AuthKey_7UKLD4C2CC.p8&quot; ~/.appstoreconnect/private_keys/AuthKey_7UKLD4C2CC.p8
+      xcrun altool --upload-app         --type ios         --file &quot;/Users/familybot/.openclaw/workspace/projects/SwiftDesignPlayground/build/SwiftDesignPlayground.ipa&quot;         --apiKey &quot;7UKLD4C2CC&quot;         --apiIssuer &quot;69a6de70-79a7-47e3-e053-5b8c7c11a4d1&quot;         --show-progress         2&gt;&amp;1 | grep -v &quot;^$&quot;
+    " time="39.485218">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="15: 
+      python3 - &lt;&lt; &apos;PYEOF&apos;
+import jwt, time, urllib.request, json, sys, os
+
+def make_token():
+    key = open(os.path.expanduser(&quot;~/.openclaw/secrets/app-store-connect/AuthKey_7UKLD4C2CC.p8&quot;)).read()
+    payload = {&quot;iss&quot;: &quot;69a6de70-79a7-47e3-e053-5b8c7c11a4d1&quot;, &quot;iat&quot;: int(time.time()), &quot;exp&quot;: int(time.time()) + 1200, &quot;aud&quot;: &quot;appstoreconnect-v1&quot;}
+    return jwt.encode(payload, key, algorithm=&quot;ES256&quot;, headers={&quot;kid&quot;: &quot;7UKLD4C2CC&quot;})
+
+def headers():
+    return {&quot;Authorization&quot;: f&quot;Bearer {make_token()}&quot;, &quot;Content-Type&quot;: &quot;application/json&quot;}
+
+APP_ID = &quot;6759811915&quot;
+GROUP_ID = &quot;3e9bf740-1bea-4a46-b0e7-e0b569e55f6b&quot;
+BUILD_VERSION = &quot;2&quot;
+
+build_id = None
+for attempt in range(90):
+    url = f&quot;https://api.appstoreconnect.apple.com/v1/apps/{APP_ID}/builds?limit=20&amp;fields[builds]=version,processingState&quot;
+    req = urllib.request.Request(url, headers=headers())
+    builds = json.loads(urllib.request.urlopen(req).read())[&quot;data&quot;]
+    match = next((b for b in builds if b[&quot;attributes&quot;][&quot;version&quot;] == BUILD_VERSION), None)
+    if match:
+        state = match[&quot;attributes&quot;][&quot;processingState&quot;]
+        print(f&quot;[{attempt+1}/90] Build {BUILD_VERSION}: {state}&quot;)
+        if state == &quot;VALID&quot;:
+            build_id = match[&quot;id&quot;]
+            break
+        elif state == &quot;INVALID&quot;:
+            print(f&quot;ERROR: Build {BUILD_VERSION} is INVALID&quot;, file=sys.stderr)
+            sys.exit(1)
+    else:
+        print(f&quot;[{attempt+1}/90] Build {BUILD_VERSION} not yet visible in ASC...&quot;)
+    time.sleep(10)
+
+if not build_id:
+    print(f&quot;ERROR: Build {BUILD_VERSION} never reached VALID after 15 minutes&quot;, file=sys.stderr)
+    sys.exit(1)
+
+print(f&quot;✅ Build {BUILD_VERSION} is VALID: {build_id}&quot;)
+
+payload_data = json.dumps({&quot;data&quot;: [{&quot;type&quot;: &quot;builds&quot;, &quot;id&quot;: build_id}]}).encode()
+req = urllib.request.Request(
+    f&quot;https://api.appstoreconnect.apple.com/v1/betaGroups/{GROUP_ID}/relationships/builds&quot;,
+    data=payload_data, headers=headers(), method=&quot;POST&quot;
+)
+try:
+    urllib.request.urlopen(req)
+    print(f&quot;✅ Build {BUILD_VERSION} added to Internal Testers&quot;)
+except urllib.error.HTTPError as e:
+    body = e.read().decode()
+    if e.code == 409:
+        print(f&quot;ℹ️  Build {BUILD_VERSION} already in group&quot;)
+    else:
+        print(f&quot;ERROR {e.code}: {body}&quot;, file=sys.stderr)
+        sys.exit(1)
+PYEOF
+    " time="125.682354">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="16: shell command" time="0.015833">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="17: add_git_tag" time="0.014106">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="18: push_git_tags" time="0.013556">
+        
+          <failure message="/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/actions/actions_helper.rb:67:in &apos;Fastlane::Actions.execute_action&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:255:in &apos;block in Fastlane::Runner#execute_action&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:229:in &apos;Dir.chdir&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:229:in &apos;Fastlane::Runner#execute_action&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:157:in &apos;Fastlane::Runner#trigger_action_by_name&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/fast_file.rb:159:in &apos;Fastlane::FastFile#method_missing&apos;&#10;Fastfile:214:in &apos;block (2 levels) in Fastlane::FastFile#parsing_binding&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/lane.rb:41:in &apos;Fastlane::Lane#call&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:49:in &apos;block in Fastlane::Runner#execute&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:45:in &apos;Dir.chdir&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/runner.rb:45:in &apos;Fastlane::Runner#execute&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/lane_manager.rb:46:in &apos;Fastlane::LaneManager.cruise_lane&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/command_line_handler.rb:34:in &apos;Fastlane::CommandLineHandler.handle&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/commands_generator.rb:110:in &apos;block (2 levels) in Fastlane::CommandsGenerator#run&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/commander-4.6.0/lib/commander/command.rb:187:in &apos;Commander::Command#call&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/commander-4.6.0/lib/commander/command.rb:157:in &apos;Commander::Command#run&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/commander-4.6.0/lib/commander/runner.rb:444:in &apos;Commander::Runner#run_active_command&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in &apos;Commander::Runner#run!&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/commander-4.6.0/lib/commander/delegates.rb:18:in &apos;Commander::Delegates#run!&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/commands_generator.rb:363:in &apos;Fastlane::CommandsGenerator#run&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/commands_generator.rb:43:in &apos;Fastlane::CommandsGenerator.start&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/fastlane/lib/fastlane/cli_tools_distributor.rb:132:in &apos;Fastlane::CLIToolsDistributor.take_off&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/gems/fastlane-2.232.1/bin/fastlane:23:in &apos;&lt;top (required)&gt;&apos;&#10;/opt/homebrew/Cellar/ruby/4.0.1/lib/ruby/4.0.0/rubygems.rb:303:in &apos;Kernel#load&apos;&#10;/opt/homebrew/Cellar/ruby/4.0.1/lib/ruby/4.0.0/rubygems.rb:303:in &apos;Gem.activate_and_load_bin_path&apos;&#10;/opt/homebrew/Cellar/fastlane/2.232.1/libexec/bin/fastlane:25:in &apos;&lt;main&gt;&apos;&#10;&#10;Exit status of command &apos;git push origin --tags&apos; was 128 instead of 0.&#10;fatal: &apos;origin&apos; does not appear to be a git repository&#10;fatal: Could not read from remote repository.&#10;&#10;Please make sure you have the correct access rights&#10;and the repository exists.&#10;" />
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>
